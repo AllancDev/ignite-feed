@@ -15,7 +15,9 @@ const comments = [
 export function Post({ author, content, publishedAt }) {
     const [comments, setComments] = useState([
         'Post muito bacana, heim?'
-    ])
+    ]);
+
+    const [ newCommentText, setNewCommentText] = useState('');
 
     const publishedDateFormatted = format(publishedAt, "dd 'de' LLLL 'ás' HH:mm'h'", {
         locale: ptBR
@@ -29,10 +31,20 @@ export function Post({ author, content, publishedAt }) {
     function handleCreateNewComment() {
         event.preventDefault();
 
-        const newCommentText = event.target.comment.value;
-        setComments([...comments, newCommentText]);
-        
-        event.target.comment.value = '';
+        setComments([...comments,  newCommentText]);
+
+        setNewCommentText('');
+    }
+
+    function handleNewCommentChange() {
+        setNewCommentText(event.target.value);
+    }
+
+    function deleteComment(commentToDelete) {
+        const commentsWithoutDeleteOne = comments.filter(comment => {
+            return comment !== commentToDelete;
+        })
+        setComments(commentsWithoutDeleteOne);
     }
 
     return <article className={styles.post}>
@@ -53,9 +65,9 @@ export function Post({ author, content, publishedAt }) {
             {content && (
                 content.map(item => {
                     if (item.type === 'paragraph') {
-                        return <p>{item.content}</p>
+                        return <p key={item.content}>{item.content}</p>
                     } else if (item.type === 'link') {
-                        return <p><a href="#">#{item.content}</a></p>
+                        return <p key={item.content}><a href="#">#{item.content}</a></p>
                     }
                 })
             )}
@@ -63,7 +75,13 @@ export function Post({ author, content, publishedAt }) {
 
         <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
             <strong>Deixe seu feedback</strong>
-            <textarea name="comment" placeholder='Deixe um comentário'></textarea>
+            <textarea 
+                name="comment" 
+                placeholder='Deixe um comentário'
+                onChange={handleNewCommentChange}
+                value={newCommentText}
+                required
+            ></textarea>
             <footer>
                 <button type="submit">Publicar</button>
             </footer>
@@ -75,6 +93,7 @@ export function Post({ author, content, publishedAt }) {
                     <Comment 
                         key={comment}
                         content={comment}
+                        onDeleteComment={deleteComment}
                     />
                 ))
             )}
